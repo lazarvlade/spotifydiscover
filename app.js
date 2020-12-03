@@ -79,15 +79,17 @@ function addTrack(track,token)
     url: `https://api.spotify.com/v1/playlists/`+playlistId+'/tracks?uris='+track,
     headers: { 
       'Accept': 'application/json',
-      'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + token
     },
     json:true
     }
-    request.post(link,function(err,res,body)
-    {});
+    request.post(link,function(err,res)
+    {
+      if (res.statusCode==500)
+       addTrack(track,token);
+      console.log(res.statusCode + " " + track);
+    });
 }
-
  function createPlaylist(token) {
       var link={
       url: `https://api.spotify.com/v1/users/y8xyv2ndr98asvg5eo96yhjny/playlists`,
@@ -116,35 +118,32 @@ function addTrack(track,token)
     
   */
 
-function getRecommendations(access_token,a,n)
+function getRecommendations(access_token,a)
 {
   token = "Bearer " +access_token;
   n=a.length;
   url="https://api.spotify.com/v1/recommendations?limit=3&seed_tracks=";
-  for (let i=0;i<n;i++){
-    if (i!=n-1)
-    {
-    url+=a[i]+',';
-    }
-    else 
-    {
-      url+=a[i];
-    }
-  }
-  console.log(url);
+      url+=a;
   request.get({url,headers:{"Authorization":token},json:true}, function(error, res, body) {
     var limitNumber=body.tracks.length;
+    urlTrack="";
     for (let j=0;j<limitNumber;j++)
     {
-      addTrack(body.tracks[j].uri,access_token);
+      if (limitNumber-1!=j)
+      {
+        urlTrack+=body.tracks[j].uri + ',';
+      }
+      else
+      urlTrack+=body.tracks[j].uri;
     }
+    addTrack(urlTrack,access_token);
     });
   
 }
 
 function getTracks(access_token,playlist)
 {
-  number= playlist.id;
+  number= playlist;
   var link = {
     url: 'https://api.spotify.com/v1/playlists/'+number+'/tracks',
     headers: { 'Authorization': 'Bearer ' + access_token },
@@ -153,18 +152,9 @@ function getTracks(access_token,playlist)
   request.get(link, function(error, res, items) 
   {
     let n=items.total; // Tracks in playlist
-    for (let j=0;j<n;j++) // Recommendations on all tracks
+    for (let j=0;j<5;j++) // Recommendations on all tracks
     {
-      var a = [];
-      var i;
-      var trackNr=1;
-      for (i=0;i<trackNr;i++)  // 1 track per url
-      {
-        a[i]=items.items[j].track.id;
-      }
-      getRecommendations(access_token,a);
-      j++; 
-      console.log(playlist.name + ' ' + j);
+      getRecommendations(access_token,items.items[j].track.id);
     }
   });
 };
@@ -173,7 +163,7 @@ function getTracks(access_token,playlist)
 function getPlaylists(access_token)
 {
 var link = {
-  url: 'https://api.spotify.com/v1/me/playlists?limit=50',
+  url: 'https://api.spotify.com/v1/users/bpp1cjhufo73f1wc560k9ktiu/playlists?limit=50',
   headers: { 'Authorization': 'Bearer ' + access_token },
   json: true
 };
@@ -185,16 +175,9 @@ request.get(link, function(error, res, body)
   var ok = 0;
   for (let j=0;j<2;j++)
   {
-    if (body.items[j].name == "Recomandari"){
-      playlistId=body.items[j].id;
-      ok=1;
-    }
+  getTracks(access_token,body.items[j].id);
   }
-  if (ok==0) createPlaylist(access_token);
-  for (let i=1;i<2;i++){
-  getTracks(access_token,body.items[i]);
-  }
-  }
+}
 });
 }
 
@@ -241,6 +224,7 @@ app.get('/callback', function(req, res) {
         };
        request.get(linkul, function(err,res,body)
        {
+        createPlaylist(access_token);
         getPlaylists(access_token);
        });
 
