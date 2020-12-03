@@ -1,1 +1,1 @@
-# spotifydiscover
+Tired of the bad discover weekly?
