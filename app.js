@@ -15,8 +15,8 @@ var cookieParser = require('cookie-parser');
 const { application, json } = require('express');
 const { post } = require('request');
 
-var client_id = '5f3eeaac451a4723ba3bb184e169a16e'; // Your client id
-var client_secret = 'a0a4fbb9c5de4abd9da311983931f030'; // Your secret
+var client_id = 'CLIENT_ID'; // Your client id
+var client_secret = 'CLIENT_SECRET'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
 
